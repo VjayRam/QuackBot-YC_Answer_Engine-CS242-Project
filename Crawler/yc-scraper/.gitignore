@@ -8,5 +8,5 @@
 geckodriver.log
 
 # Output files
-output.jl
-start_urls.txt
+# output.jl
+# start_urls.txt
