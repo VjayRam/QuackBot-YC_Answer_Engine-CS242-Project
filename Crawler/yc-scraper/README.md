@@ -26,9 +26,6 @@ import pandas as pd
 df = pd.read_json('./output.jl', lines=True)
 ```
 
-## Dataset
-
-Check out the dataset I published on [Kaggle.com](https://www.kaggle.com/datasets/miguelcorraljr/y-combinator-directory).
 
 ## Attributes
 
