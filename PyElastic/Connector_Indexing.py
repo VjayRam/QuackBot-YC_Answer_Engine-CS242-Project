@@ -87,10 +87,10 @@ if __name__ == "__main__":
             print(f"Loaded {len(data)} records from {file_path}")
             
             # Create an index in Elasticsearch
-            create_index(es, index_name)
+            # create_index(es, index_name)
             
-            # Index the loaded data efficiently
-            index_documents(es, index_name, data)
+            # # Index the loaded data efficiently
+            # index_documents(es, index_name, data)
         else:
             print("No data found. Ensure the .jl file exists and contains valid JSON lines.")
     else:

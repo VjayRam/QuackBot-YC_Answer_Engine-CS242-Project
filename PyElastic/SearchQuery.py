@@ -29,6 +29,11 @@ def search_documents(index_name, query, size=10):
 
 # Run the search
 if __name__ == "__main__":
-    index_name = "y_combinator_companies"
-    user_query = "All the comapnies founded in 2023"
-    search_documents(index_name, user_query)
+    index_name = 'y_combinator_companies'
+    while True:
+        print("Type exit to quit")
+        query = input("Enter query to search DB: ")
+        if query =="exit":
+            break
+        else:
+            search_documents(index_name, query)

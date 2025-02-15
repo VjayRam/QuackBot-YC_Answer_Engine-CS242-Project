@@ -1,68 +1,228 @@
-## About Y Combinator
+# YC Scraper
 
-Y Combinator is a startup accelerator that has invested in over 4,000 companies that have a combined valuation of over $600B. The overall goal of Y Combinator is to help startups really take off.
+YC Scraper is a web scraping and indexing tool designed to extract company information from Y Combinator's database. The project uses Python, Scrapy for web scraping, Docker for containerization, and Elasticsearch for data indexing and searching.
 
-## Requirements
+## Features
+- Automated web scraping of Y Combinator company data
+- Optional image data collection
+- Elasticsearch-based search functionality
+- Docker containerization for easy deployment
+- Interactive search interface
+- Configurable crawling options
 
-You must have [Firefox](https://www.mozilla.org/en-US/firefox/new/) and [geckodriver](https://github.com/mozilla/geckodriver/releases) installed. You can install `geckodriver` by running `brew install geckodriver`.
+## Prerequisites
 
-Python packages include:
+The setup script will automatically check and install most requirements, but you should have:
+- Windows operating system
+- Internet connection
+- Administrator privileges
 
-- [Scrapy](https://scrapy.org)
-- [Selenium](https://www.selenium.dev/documentation/)
-- [tqdm](https://tqdm.github.io)
-- [Pandas](https://pandas.pydata.org) (optional)
+The script will automatically install/check for:
+- Python (version 3.12.0 - 3.12.x)
+- Docker and Docker Compose
+- Firefox browser
+- Required Python packages
+
+## Project Structure
+```
+YC-Scraper/
+├── setup.bat          # Environment setup and dependency installer
+├── crawler.bat        # Web scraping script
+├── indexbuilder.bat   # Elasticsearch indexing script
+├── search.bat         # Search interface script
+├── requirements.txt   # Python dependencies
+├── docker-compose.yaml
+├── PyElasticDumper.py
+├── SearchQuery.py
+├── ycombinator/
+│   └── ycombinator/
+│       └── spiders/
+│           └── yscraper.py
+└── ycombinator_with_image/
+    └── ycombinator/
+        └── spiders/
+            └── yscraper.py
+```
+
+## Installation and Setup
+
+Simply run the setup script:
+```bash
+setup.bat
+```
+The setup script will automatically:
+- Check and verify Docker installation
+- Check and verify Docker Compose installation
+- Check and install Firefox browser if needed
+- Verify Python version (3.12.0 - 3.12.x) and install if needed
+- Create and activate a virtual environment
+- Install required Python packages
+- Start Docker containers using Docker Compose
+
+### Suggested Setup Usage
+The simplest way to get started is to just double-click `setup.bat` or run it from the command prompt. Wait for the script to complete all installations and verifications. The script will show progress information for each step.
 
 ## Usage
 
-1. Clone this repository
-2. Move to the `yc-scraper` directory
-    2. [Optional] Create an environment for `yc-scraper` (for example by ```conda create --name <env_name> --file requirements.txt```)
-3. Run `python yc_links_extractor.py`. This will fetch the individual URLs for the spider to crawl.
-4. Run `scrapy runspider scrapy-project/ycombinator/spiders/yscraper.py -o output.jl`. This generates a JSON lines file which you can read with Pandas:
+### 1. Running the Crawler
 
-```python
-import pandas as pd
-df = pd.read_json('./output.jl', lines=True)
+⚠️ **Important Crawling Time and Data Size Information:**
+- Without images (`crawler.bat`): 
+  - Crawling time: ~15 minutes
+  - Output file size: ~100MB
+- With images (`crawler.bat -i`): 
+  - Crawling time: 25-30 minutes
+  - Output file size: ~600MB
+- Quick test option (`crawler.bat -s seed2small.txt`):
+  - Crawling time: ~5 minutes
+  - Perfect for testing the crawler functionality
+  - Uses a smaller dataset
+
+The crawler can be run in different modes using `crawler.bat`:
+
+```bash
+# Quick test with small dataset - 5min
+crawler.bat -s seed2small.txt
+
+# Basic usage (without images) - 15min, ~100MB
+crawler.bat
+
+# With image data - 25-30min, ~600MB
+crawler.bat -i
+
+# With custom output file
+crawler.bat -o custom_output.jl
+
+# Combining options
+crawler.bat -i -o custom_output.jl -s seed.txt
 ```
 
+<<<<<<< Updated upstream
+=======
+Parameters:
+- `-i`: Enable image data collection (increases crawling time and file size significantly)
+- `-o`: Specify output file path (default: output.jl)
+- `-s`: Specify seed file containing URLs to scrape (use seed2small.txt for quick testing)
 
-## Attributes
+### Suggested Crawler Usage
+For most users, we recommend starting with:
+```bash
+# For testing (5 minutes)
+crawler.bat -s seed2small.txt
+>>>>>>> Stashed changes
 
-|  Attribute           |  Description | Data Type  |
-|-----------------------|---|---|
-| company_id            | Company id provided by YC  | int  |
-| company_name          | Company name  | string  |
-| short_description     | One-line description of the company  | string  |
-| long_description      | Long description of the company  | string  |
-| batch                 | Batch name provided by YC  | string  |
-| status                | Company status  | string  |
-| tags                  | Industry tags  | list  |
-| location              | Company location | string  |
-| country               | Company country  | string  |
-| year_founded          | Year the company was founded  | int  |
-| num_founders          | Number of founders  | int  |
-| founders_names        | Full names of the founders  | list  |
-| team_size             | Number of employees  | int  |
-| website               | Company website   | string  |
-| cb_url                | Company Crunchbase url  | string  |
-| linkedin_url          | Company LinkedIn url  | string  |
-| image_urls            | Company Image urls  | string  |
+# For full dataset without images (15 minutes)
+crawler.bat
 
-## Sample Data
+# For full dataset with images (25-30 minutes)
+crawler.bat -i
+```
+Choose based on your needs:
+- Use seed2small.txt for quick testing
+- Run without -i flag for faster crawling and smaller file size
+- Use -i flag only when images are necessary (significantly increases time and file size)
 
-Note: I excluded 'short_description', 'long_description', 'cb_url', and 'linkedin_url'  in the sample data for brevity.
+### 2. Building the Index
 
-| company_id | company_name | short_description                         | batch | status   | tags                                                      | location      | country | year_founded | num_founders | founders_names                                       | team_size | website                  |   |
-|------------|--------------|-------------------------------------------|-------|----------|-----------------------------------------------------------|---------------|---------|--------------|--------------|------------------------------------------------------|-----------|--------------------------|---|
-| 240        | Stripe       | Economic infrastructure for the internet. | S09   | Active   | ['Fintech', 'Banking as a Service', 'SaaS']               | San Francisco | US      |              | 2            | ['John Collison', 'Patrick Collison']                | 7000      | <http://stripe.com>        |   |
-| 271        | Airbnb       | Book accommodations around the world.     | W09   | Public   | ['Travel', 'Marketplace']                                 | San Francisco | US      | 2008         | 3            | ['Nathan Blecharczyk', 'Brian Chesky', 'Joe Gebbia'] | 6132      | <http://airbnb.com>        |   |
-| 325        | Dropbox      | Backup and share files in the cloud.      | S07   | Public   | []                                                        | San Francisco | US      | 2008         | 2            | ['Arash Ferdowsi', 'Drew Houston']                   | 4000      | <http://dropbox.com>       |   |
-| 379        | Reddit       | The frontpage of the internet.            | S05   | Acquired | ['Community', 'Social', 'Social Media', 'Social Network'] | San Francisco | US      |              | 1            | ['Steve Huffman']                                    | 201       | <http://reddit.com>        |   |
-| 439        | Coinbase     | Buy, sell, and manage cryptocurrencies.   | S12   | Public   | ['Crypto / Web3']                                         | San Francisco | US      | 2012         | 1            | ['Brian Armstrong']                                  | 6112      | <https://www.coinbase.com> |   |
-| 531        | DoorDash     | Restaurant delivery.                      | S13   | Public   | ['E-commerce', 'Marketplace']                             | San Francisco | US      | 2013         | 3            | ['Andy Fang', 'Stanley Tang', 'Tony Xu']             | 8600      | <http://doordash.com>      |   |
+After collecting data, build the Elasticsearch index:
+```bash
+indexbuilder.bat [input_file]
+```
+- `input_file` is optional (defaults to output.jl)
+- This script will load the scraped data into Elasticsearch
 
+### Suggested Index Builder Usage (2min)
+If you've used the default crawler settings, simply double-click `indexbuilder.bat` or run:
+```bash
+indexbuilder.bat
+```
+This will automatically index the data from output.jl into Elasticsearch.
 
+### 3. Searching the Data
 
-##Note
-Note:I forgot to deisplay the image URL column in the above example so just understand and ignore.
+To search through the indexed data:
+```bash
+search.bat
+```
+This will launch an interactive search interface where you can query the collected data.
+
+### Suggested Search Usage
+Simply double-click `search.bat` or run:
+```bash
+search.bat
+```
+This will open an interactive console where you can type your search queries to find companies in the database.
+
+## Troubleshooting
+
+1. If setup.bat fails:
+   - Ensure you have administrator privileges
+   - Check your internet connection
+   - Ensure Docker is running
+   - Check if any antivirus is blocking installations
+   - Verify you have enough disk space (at least 1GB free)
+
+2. If crawler.bat fails:
+   - Check internet connectivity
+   - Verify Firefox is properly installed
+   - Verify seed file format if using one
+   - Check available disk space (600MB+ for image crawling)
+   - Try the small seed file first to verify functionality
+
+3. If indexbuilder.bat fails:
+   - Ensure Elasticsearch container is running
+   - Check if the input file exists
+   - Verify Docker container health
+   - Ensure enough memory is available for Elasticsearch
+
+## System Requirements
+
+- Minimum 4GB RAM (8GB recommended for image crawling)
+- At least 1GB free disk space (2GB recommended for image crawling)
+- Windows 10 or later
+- Stable internet connection
+- Administrator privileges
+
+## Notes
+
+- The crawler uses Firefox browser for web scraping
+- Rate limiting is implemented to avoid overwhelming the target servers
+- Images are stored in base64 format when using the -i flag
+- Search functionality supports fuzzy matching and advanced query syntax
+- All installations are performed with minimal user interaction
+- Data is stored locally and can be reindexed as needed
+
+## Clean Up
+
+To stop all containers and clean up:
+```bash
+docker-compose down
+```
+This will stop and remove all Docker containers created by the project.
+
+## Quick Start Guide
+
+For the fastest way to get started, simply:
+
+1. Ensure you have administrator privileges
+2. Double-click `setup.bat` and wait for completion
+3. Double-click `crawler.bat -s seed2small.txt` for a quick test (5 min)
+4. Double-click `indexbuilder.bat` to index the collected data
+5. Double-click `search.bat` to search through the data
+
+This simple sequence will get you from installation to searching YC company data with minimal configuration required.
+
+## Data Privacy and Usage
+
+- This tool is for educational and research purposes
+- Respect website terms of service and robots.txt rules
+- Consider rate limiting when crawling large datasets
+- Handle any collected data in accordance with applicable privacy laws
+
+## Support
+
+If you encounter any issues:
+1. Check the troubleshooting section
+2. Verify system requirements
+3. Try the quick test option first
+4. Check the logs in crawler_log.txt for detailed error messages
